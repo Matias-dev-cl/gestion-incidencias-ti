@@ -1,0 +1,5 @@
+<span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+  {% if prioridad == 'CRITICA' %}bg-rose-100 text-rose-800
+  {% elif prioridad == 'ALTA' %}bg-orange-100 text-orange-800
+  {% elif prioridad == 'MEDIA' %}bg-slate-100 text-slate-700
+  {% else %}bg-slate-100 text-slate-500{% endif %}">{{ etiqueta }}</span>
