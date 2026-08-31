@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Django
+*.sqlite3
+staticfiles/
+media/
+.env
+
+# Node / Tailwind
+node_modules/
+
+# Editores y SO
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+/* Tailwind v4 escanea estas rutas para saber que clases dejar en el bundle.
+   Parte de las clases de los formularios se generan en Python, dentro de las
+   apps, por eso apps tambien esta en la lista y no solo templates. */
+@source "../../templates";
+@source "../../apps";
