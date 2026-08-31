@@ -1,14 +1,60 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
-from django.views.generic import CreateView, DetailView, ListView, View
+from django.views.generic import CreateView, DetailView, ListView, TemplateView, View
 
+from apps.equipos.models import Equipo, EstadoEquipo
 from apps.usuarios.mixins import SoloGestionMixin
 
 from .forms import ComentarioForm, FiltroTicketsForm, GestionTicketForm, TicketForm
-from .models import Estado, Ticket
+from .models import Estado, Prioridad, Ticket
+
+
+class DashboardView(LoginRequiredMixin, TemplateView):
+    """Resumen de una pantalla.
+
+    Las cifras se calculan con agregaciones en la base y no en Python para que
+    el dashboard no dependa del tamano de la tabla de tickets.
+    """
+
+    template_name = "tickets/dashboard.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        usuario = self.request.user
+        tickets = Ticket.objects.visibles_para(usuario)
+
+        por_estado = {
+            fila["estado"]: fila["total"]
+            for fila in tickets.values("estado").annotate(total=Count("id"))
+        }
+        por_prioridad = {
+            fila["prioridad"]: fila["total"]
+            for fila in tickets.abiertos().values("prioridad").annotate(total=Count("id"))
+        }
+
+        ctx["metricas"] = [
+            ("Abiertos", tickets.abiertos().count(), "sky"),
+            ("En progreso", por_estado.get(Estado.EN_PROGRESO, 0), "amber"),
+            ("Resueltos", por_estado.get(Estado.RESUELTO, 0), "emerald"),
+            ("Criticos abiertos", por_prioridad.get(Prioridad.CRITICA, 0), "rose"),
+        ]
+        ctx["por_estado"] = [
+            (etiqueta, por_estado.get(valor, 0)) for valor, etiqueta in Estado.choices
+        ]
+        ctx["total"] = tickets.count()
+        ctx["recientes"] = tickets.con_relaciones()[:8]
+        ctx["sin_asignar"] = (
+            tickets.abiertos().filter(tecnico_asignado__isnull=True).count()
+            if usuario.puede_gestionar_tickets
+            else 0
+        )
+        ctx["equipos_en_reparacion"] = Equipo.objects.filter(
+            estado=EstadoEquipo.EN_REPARACION
+        ).count()
+        return ctx
 
 
 class TicketListView(LoginRequiredMixin, ListView):
