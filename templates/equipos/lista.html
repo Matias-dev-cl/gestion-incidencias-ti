@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block titulo %}Inventario &middot; Incidencias TI{% endblock %}
+{% block contenido %}
+<div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+  <h1 class="text-2xl font-semibold text-slate-900">Inventario de equipos</h1>
+  {% if user.es_admin %}
+    <a href="{% url 'equipos:crear' %}" class="rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700">Agregar equipo</a>
+  {% endif %}
+</div>
+
+<form method="get" class="mb-5 flex flex-wrap gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+  <input type="search" name="q" value="{{ q }}" placeholder="Codigo, marca, modelo o ubicacion"
+         class="min-w-[16rem] flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200">
+  <button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Buscar</button>
+</form>
+
+<div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+  <div class="overflow-x-auto">
+    <table class="min-w-full text-sm">
+      <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+        <tr>
+          <th class="px-4 py-3">Codigo</th>
+          <th class="px-4 py-3">Tipo</th>
+          <th class="px-4 py-3">Equipo</th>
+          <th class="px-4 py-3">Ubicacion</th>
+          <th class="px-4 py-3">Responsable</th>
+          <th class="px-4 py-3">Estado</th>
+          <th class="px-4 py-3">Tickets abiertos</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {% for e in equipos %}
+          <tr class="hover:bg-slate-50">
+            <td class="px-4 py-3"><a href="{{ e.get_absolute_url }}" class="font-medium text-sky-700 hover:underline">{{ e.codigo_interno }}</a></td>
+            <td class="px-4 py-3 text-slate-600">{{ e.get_tipo_display }}</td>
+            <td class="px-4 py-3 text-slate-600">{{ e.marca }} {{ e.modelo }}</td>
+            <td class="px-4 py-3 text-slate-600">{{ e.ubicacion|default:"&mdash;" }}</td>
+            <td class="px-4 py-3 text-slate-600">{% firstof e.responsable.get_full_name e.responsable.username "Sin asignar" %}</td>
+            <td class="px-4 py-3">
+              <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium
+                {% if e.estado == 'OPERATIVO' %}bg-emerald-100 text-emerald-800
+                {% elif e.estado == 'EN_REPARACION' %}bg-amber-100 text-amber-800
+                {% else %}bg-slate-200 text-slate-600{% endif %}">{{ e.get_estado_display }}</span>
+            </td>
+            <td class="px-4 py-3 font-medium text-slate-900">{{ e.abiertos }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7" class="px-4 py-10 text-center text-slate-500">El inventario esta vacio.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
