@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block titulo %}Nuevo ticket &middot; Incidencias TI{% endblock %}
+{% block contenido %}
+<div class="mx-auto max-w-2xl">
+  <h1 class="mb-1 text-2xl font-semibold text-slate-900">Reportar una incidencia</h1>
+  <p class="mb-6 text-sm text-slate-500">Mientras mas concreto el detalle, menos idas y vueltas despues.</p>
+  <form method="post" class="space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    {% csrf_token %}
+    {% for campo in form %}
+      <div>
+        <label class="mb-1 block text-sm font-medium text-slate-700" for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+        {{ campo }}
+        {% if campo.help_text %}<p class="mt-1 text-xs text-slate-500">{{ campo.help_text }}</p>{% endif %}
+        {% for error in campo.errors %}<p class="mt-1 text-xs text-rose-600">{{ error }}</p>{% endfor %}
+      </div>
+    {% endfor %}
+    <div class="flex justify-end gap-3">
+      <a href="{% url 'tickets:lista' %}" class="rounded-lg border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50">Cancelar</a>
+      <button class="rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700">Crear ticket</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
