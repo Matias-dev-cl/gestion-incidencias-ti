@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block titulo %}Entrar &middot; Incidencias TI{% endblock %}
+{% block contenido %}
+<div class="mx-auto max-w-sm">
+  <div class="mb-6 text-center">
+    <span class="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-xl bg-sky-600 text-lg font-bold text-white">TI</span>
+    <h1 class="text-xl font-semibold text-slate-900">Gestion de Incidencias TI</h1>
+    <p class="mt-1 text-sm text-slate-500">Ingresa con tu cuenta corporativa.</p>
+  </div>
+  <form method="post" class="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    {% csrf_token %}
+    {% if form.errors %}
+      <p class="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800">Usuario o contrasena incorrectos.</p>
+    {% endif %}
+    <div>
+      <label class="mb-1 block text-sm font-medium" for="{{ form.username.id_for_label }}">Usuario</label>
+      <input type="text" name="username" id="{{ form.username.id_for_label }}" autofocus required
+             class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200">
+    </div>
+    <div>
+      <label class="mb-1 block text-sm font-medium" for="{{ form.password.id_for_label }}">Contrasena</label>
+      <input type="password" name="password" id="{{ form.password.id_for_label }}" required
+             class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200">
+    </div>
+    <button class="w-full rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700">Entrar</button>
+  </form>
+</div>
+{% endblock %}
