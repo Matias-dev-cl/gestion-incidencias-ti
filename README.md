@@ -32,7 +32,10 @@ El panel de administración de Django queda configurado con filtros, búsqueda, 
 
 En pantallas chicas la tabla de tickets se reemplaza por tarjetas en vez de dejar que la fila se desborde en horizontal, porque quien reporta una falla muchas veces lo hace desde el teléfono, parado frente al equipo que no funciona:
 
-<img src="docs/capturas/movil-tickets.png" alt="Bandeja de tickets en móvil" width="320">
+<p>
+  <img src="docs/capturas/movil-tickets.png" alt="Bandeja de tickets en móvil" width="300">
+  <img src="docs/capturas/movil-dashboard.png" alt="Dashboard en móvil" width="300">
+</p>
 
 ## Stack y por qué
 
