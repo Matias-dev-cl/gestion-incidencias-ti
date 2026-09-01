@@ -121,7 +121,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 
-if not DEBUG:
+# La suite de tests corre siempre con DEBUG=False, asi que sin excluirla aqui
+# el redirect a HTTPS convertiria cada peticion del cliente de tests en un 301
+# y ninguna assertion sobre codigos de respuesta volveria a ser cierta.
+if not DEBUG and not EJECUTANDO_TESTS:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_SSL_REDIRECT = env_bool("SECURE_SSL_REDIRECT", True)
     SESSION_COOKIE_SECURE = True
