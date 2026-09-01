@@ -80,11 +80,20 @@ class TicketListView(LoginRequiredMixin, ListView):
                     qs = qs.filter(**{campo: datos[campo]})
             if datos.get("mios") and self.request.user.puede_gestionar_tickets:
                 qs = qs.filter(tecnico_asignado=self.request.user)
-        return qs
+
+        self.orden = self.request.GET.get("orden", "recientes")
+        return qs.ordenados_por(self.orden)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx["filtro"] = self.filtro
+        ctx["orden"] = self.orden
+        # Los filtros vigentes viajan con el enlace de orden y de paginacion,
+        # para que cambiar el orden no borre lo que la persona ya filtro.
+        parametros = self.request.GET.copy()
+        parametros.pop("orden", None)
+        parametros.pop("page", None)
+        ctx["parametros"] = parametros.urlencode()
         return ctx
 
 
