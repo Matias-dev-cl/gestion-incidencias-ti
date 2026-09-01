@@ -1,5 +1,8 @@
 # Gestión de Incidencias TI
 
+[![tests](https://github.com/Matias-dev-cl/gestion-incidencias-ti/actions/workflows/tests.yml/badge.svg)](https://github.com/Matias-dev-cl/gestion-incidencias-ti/actions/workflows/tests.yml)
+[![licencia MIT](https://img.shields.io/badge/licencia-MIT-blue.svg)](LICENSE)
+
 Sistema de tickets de soporte con inventario de equipos, construido con Django, PostgreSQL y Tailwind CSS.
 
 > **Deploy en vivo:** _pendiente — se publica aquí el enlace de AWS cuando esté arriba._
@@ -119,6 +122,8 @@ python manage.py test
 ```
 
 Cubren lo que no es obvio leyendo los modelos: que un usuario no vea tickets ajenos, que resolver un ticket selle la fecha de cierre y que reabrirlo la limpie, y que el estado del equipo en el inventario siga al de sus tickets abiertos.
+
+Cada push y cada pull request los corre en GitHub Actions **contra PostgreSQL**, no contra SQLite: es la base de producción, y las diferencias entre ambas aparecen justamente en lo que este proyecto usa (constraints, índices y agregaciones). El workflow además falla si quedan migraciones sin generar o si `check --deploy` encuentra un error.
 
 ## Decisiones técnicas
 

@@ -1,0 +1,24 @@
+{% comment %}
+No hereda de base.html a proposito: si el error viene de la plantilla base o
+del contexto, extenderla haria fallar tambien la pagina de error.
+{% endcomment %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Error del servidor</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body class="min-h-screen bg-slate-100 text-slate-800 antialiased">
+  <div class="mx-auto max-w-md px-4 py-24 text-center">
+    <p class="text-6xl font-bold text-slate-300">500</p>
+    <h1 class="mt-4 text-xl font-semibold text-slate-900">Algo se rompio de nuestro lado</h1>
+    <p class="mt-2 text-sm text-slate-500">
+      El error quedo registrado. Si estabas creando un ticket, vuelve a intentarlo en un momento.
+    </p>
+    <a href="/" class="mt-6 inline-block rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700">Volver al inicio</a>
+  </div>
+</body>
+</html>

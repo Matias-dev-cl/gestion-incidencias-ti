@@ -205,3 +205,27 @@ class Reapertura(BaseDatos):
         self.client.post(reverse("tickets:reabrir", args=[self.ticket.pk]))
         self.ticket.refresh_from_db()
         self.assertEqual(self.ticket.estado, Estado.RESUELTO)
+
+
+class PaginasDeError(BaseDatos):
+    """Las plantillas de error deben renderizar sin depender de la vista.
+
+    Se prueban con el renderizador directo porque el cliente de tests corre con
+    DEBUG heredado y no siempre pasa por los manejadores personalizados.
+    """
+
+    def test_las_plantillas_de_error_renderizan(self):
+        from django.template.loader import render_to_string
+
+        for plantilla in ("404.html", "403.html", "500.html"):
+            with self.subTest(plantilla=plantilla):
+                html = render_to_string(plantilla, {"user": self.ana})
+                self.assertIn("<", html)
+
+    def test_un_equipo_ajeno_devuelve_la_pagina_404(self):
+        otro = Equipo.objects.create(
+            codigo_interno="TI-9100", tipo=TipoEquipo.NOTEBOOK, marca="Acer", responsable=self.beto
+        )
+        self.client.force_login(self.ana)
+        respuesta = self.client.get(reverse("equipos:detalle", args=[otro.pk]))
+        self.assertEqual(respuesta.status_code, 404)

@@ -1,0 +1,53 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    # Se corre contra PostgreSQL y no contra SQLite a proposito: es la base que
+    # usa produccion, y las diferencias entre ambas aparecen justamente en lo
+    # que este proyecto usa (constraints, indices, agregaciones).
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: incidencias
+          POSTGRES_PASSWORD: incidencias
+          POSTGRES_DB: incidencias_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      SECRET_KEY: clave-solo-para-la-suite-de-tests-en-integracion-continua
+      DEBUG: "False"
+      ALLOWED_HOSTS: localhost
+      DATABASE_URL: postgres://incidencias:incidencias@localhost:5432/incidencias_test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Verificar que no falten migraciones
+        run: python manage.py makemigrations --check --dry-run
+
+      - name: Revisar la configuracion de despliegue
+        run: python manage.py check --deploy --fail-level ERROR
+
+      - name: Correr los tests
+        run: python manage.py test --verbosity 2
