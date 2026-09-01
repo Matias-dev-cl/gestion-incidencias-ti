@@ -57,6 +57,7 @@ flowchart LR
 Tres apps con una responsabilidad cada una. `usuarios` define el modelo de usuario y los mixins de autorización; `tickets` concentra el flujo de trabajo; `equipos` es el inventario. Las señales de `tickets` son el único punto donde una app escribe en la otra, y está aislado en un archivo (`apps/tickets/signals.py`) para que se vea de inmediato.
 
 Detalle del modelo de datos y del flujo de estados: [`docs/arquitectura.md`](docs/arquitectura.md).
+Quién puede hacer qué y cómo recorre el sistema una incidencia: [`docs/flujo.md`](docs/flujo.md).
 
 ## Roles y permisos
 
