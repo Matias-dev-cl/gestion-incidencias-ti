@@ -18,6 +18,17 @@ class Prioridad(models.TextChoices):
     ALTA = "ALTA", "Alta"
     CRITICA = "CRITICA", "Critica"
 
+    @classmethod
+    def orden_descendente(cls):
+        """De mas urgente a menos.
+
+        El campo guarda texto, asi que ordenar por la columna daria un orden
+        alfabetico sin sentido (Alta, Baja, Critica, Media). El peso se declara
+        aqui y se traduce a un CASE de SQL en el queryset, para que el orden lo
+        resuelva la base y no Python sobre una pagina ya recortada.
+        """
+        return [cls.CRITICA, cls.ALTA, cls.MEDIA, cls.BAJA]
+
 
 class Categoria(models.TextChoices):
     HARDWARE = "HARDWARE", "Hardware"
@@ -43,6 +54,26 @@ class TicketQuerySet(models.QuerySet):
 
     def con_relaciones(self):
         return self.select_related("solicitante", "tecnico_asignado", "equipo")
+
+    def ordenados_por(self, criterio):
+        """Criterios de orden aceptados por la bandeja.
+
+        Cualquier valor desconocido cae en el orden por defecto en vez de
+        llegar a `order_by()`, para que un parametro inventado en la URL no
+        pueda ordenar por una columna arbitraria.
+        """
+        if criterio == "prioridad":
+            peso = models.Case(
+                *[
+                    models.When(prioridad=valor, then=models.Value(indice))
+                    for indice, valor in enumerate(Prioridad.orden_descendente())
+                ],
+                output_field=models.IntegerField(),
+            )
+            return self.annotate(peso_prioridad=peso).order_by("peso_prioridad", "-creado_en")
+        if criterio == "antiguos":
+            return self.order_by("creado_en")
+        return self.order_by("-creado_en")
 
 
 class Ticket(models.Model):

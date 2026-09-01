@@ -229,3 +229,42 @@ class PaginasDeError(BaseDatos):
         self.client.force_login(self.ana)
         respuesta = self.client.get(reverse("equipos:detalle", args=[otro.pk]))
         self.assertEqual(respuesta.status_code, 404)
+
+
+class OrdenDeLaBandeja(BaseDatos):
+    """La cola tiene que poder mostrar lo urgente arriba."""
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        from .models import Prioridad
+
+        cls.baja = Ticket.objects.create(
+            titulo="Baja", descripcion="x", solicitante=cls.ana, prioridad=Prioridad.BAJA
+        )
+        cls.critica = Ticket.objects.create(
+            titulo="Critica", descripcion="x", solicitante=cls.ana, prioridad=Prioridad.CRITICA
+        )
+        cls.alta = Ticket.objects.create(
+            titulo="Alta", descripcion="x", solicitante=cls.ana, prioridad=Prioridad.ALTA
+        )
+
+    def test_por_prioridad_pone_lo_critico_primero(self):
+        orden = list(Ticket.objects.ordenados_por("prioridad").values_list("titulo", flat=True))
+        # "No enciende" viene de BaseDatos y tiene prioridad Media por defecto.
+        self.assertEqual(orden, ["Critica", "Alta", "No enciende", "Baja"])
+
+    def test_por_defecto_ordena_por_mas_reciente(self):
+        primero = Ticket.objects.ordenados_por("recientes").first()
+        self.assertEqual(primero, self.alta)
+
+    def test_un_criterio_inventado_cae_en_el_orden_por_defecto(self):
+        inventado = list(Ticket.objects.ordenados_por("solicitante__password").values_list("pk", flat=True))
+        defecto = list(Ticket.objects.ordenados_por("recientes").values_list("pk", flat=True))
+        self.assertEqual(inventado, defecto)
+
+    def test_el_orden_sobrevive_a_los_filtros_en_la_vista(self):
+        self.client.force_login(self.ana)
+        respuesta = self.client.get(reverse("tickets:lista"), {"orden": "prioridad", "prioridad": "CRITICA"})
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertEqual([t.titulo for t in respuesta.context["tickets"]], ["Critica"])

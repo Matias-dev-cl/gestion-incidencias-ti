@@ -4,6 +4,7 @@
 <h1 class="mb-4 text-2xl font-semibold text-slate-900">Tickets</h1>
 
 <form method="get" class="mb-5 flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+  <input type="hidden" name="orden" value="{{ orden }}">
   <div class="min-w-[16rem] flex-1">{{ filtro.q }}</div>
   {{ filtro.estado }}
   {{ filtro.prioridad }}
@@ -25,9 +26,19 @@
           <th class="px-4 py-3">Solicitante</th>
           <th class="px-4 py-3">Equipo</th>
           <th class="px-4 py-3">Tecnico</th>
-          <th class="px-4 py-3">Prioridad</th>
+          <th class="px-4 py-3">
+            <a href="?orden=prioridad{% if parametros %}&amp;{{ parametros }}{% endif %}"
+               class="inline-flex items-center gap-1 hover:text-slate-900 {% if orden == 'prioridad' %}text-slate-900{% endif %}">
+              Prioridad {% if orden == 'prioridad' %}<span aria-hidden="true">&darr;</span>{% endif %}
+            </a>
+          </th>
           <th class="px-4 py-3">Estado</th>
-          <th class="px-4 py-3">Creado</th>
+          <th class="px-4 py-3">
+            <a href="?orden={% if orden == 'recientes' %}antiguos{% else %}recientes{% endif %}{% if parametros %}&amp;{{ parametros }}{% endif %}"
+               class="inline-flex items-center gap-1 hover:text-slate-900 {% if orden != 'prioridad' %}text-slate-900{% endif %}">
+              Creado {% if orden == 'recientes' %}<span aria-hidden="true">&darr;</span>{% elif orden == 'antiguos' %}<span aria-hidden="true">&uarr;</span>{% endif %}
+            </a>
+          </th>
         </tr>
       </thead>
       <tbody class="divide-y divide-slate-100">
@@ -54,8 +65,8 @@
   <nav class="mt-4 flex items-center justify-between text-sm text-slate-600">
     <span>Pagina {{ page_obj.number }} de {{ paginator.num_pages }}</span>
     <span class="space-x-2">
-      {% if page_obj.has_previous %}<a class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 hover:bg-slate-50" href="?page={{ page_obj.previous_page_number }}">Anterior</a>{% endif %}
-      {% if page_obj.has_next %}<a class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 hover:bg-slate-50" href="?page={{ page_obj.next_page_number }}">Siguiente</a>{% endif %}
+      {% if page_obj.has_previous %}<a class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 hover:bg-slate-50" href="?page={{ page_obj.previous_page_number }}&amp;orden={{ orden }}{% if parametros %}&amp;{{ parametros }}{% endif %}">Anterior</a>{% endif %}
+      {% if page_obj.has_next %}<a class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 hover:bg-slate-50" href="?page={{ page_obj.next_page_number }}&amp;orden={{ orden }}{% if parametros %}&amp;{{ parametros }}{% endif %}">Siguiente</a>{% endif %}
     </span>
   </nav>
 {% endif %}
