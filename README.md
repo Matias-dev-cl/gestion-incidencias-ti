@@ -64,12 +64,17 @@ Detalle del modelo de datos y del flujo de estados: [`docs/arquitectura.md`](doc
 |---|:--:|:--:|:--:|
 | Crear tickets y comentar | ✅ | ✅ | ✅ |
 | Ver **sus** tickets | ✅ | ✅ | ✅ |
+| Reabrir un ticket propio ya resuelto | ✅ | ✅ | ✅ |
 | Ver **todos** los tickets | — | ✅ | ✅ |
 | Notas internas (no visibles al solicitante) | — | ✅ | ✅ |
 | Cambiar estado / tomar un ticket | — | ✅ | ✅ |
 | Reasignar el ticket a otro técnico | — | — | ✅ |
+| Ver **todo** el inventario | — | ✅ | ✅ |
+| Ver sus equipos y los compartidos | ✅ | ✅ | ✅ |
 | Crear y editar equipos del inventario | — | — | ✅ |
 | Panel de administración de Django | — | — | ✅ |
+
+Un usuario común no ve el inventario completo: ve los equipos a su cargo más los que no tienen responsable —impresoras, el router del taller—, que son justamente los que cualquiera necesita poder reportar. El desplegable "equipo afectado" del formulario de ticket respeta el mismo alcance.
 
 ## Instalación local
 
@@ -128,14 +133,17 @@ Sellar la fecha de cierre, escribir la traza en el histórico y actualizar el es
 **4. El histórico, las notas internas y las entradas del sistema son una sola tabla.**
 Es un único hilo cronológico que se lee en orden. Dos banderas booleanas (`es_interno`, `es_sistema`) resuelven el filtrado; tres modelos separados habrían obligado a mezclar y ordenar tres consultas para pintar una sola lista.
 
-**5. SQLite como respaldo cuando falta `DATABASE_URL`.**
+**5. El alcance del inventario se resuelve como el de los tickets.**
+`Equipo.objects.visibles_para(usuario)` replica el patrón del QuerySet de tickets en vez de inventar un mecanismo distinto. Dos reglas de visibilidad escritas de la misma forma se leen y se auditan de una sola vez; dos formas distintas de hacer lo mismo obligan a revisar ambas cada vez que cambia una.
+
+**6. SQLite como respaldo cuando falta `DATABASE_URL`.**
 PostgreSQL es la base objetivo en local y en producción, pero un repo de portafolio que exige levantar Postgres antes de mostrar una pantalla pierde a quien solo quería mirarlo cinco minutos. La configuración es la misma; solo cambia la URL.
 
 ## Roadmap — qué falta (v2)
 
 Esto es una v1 funcional y deployada, no un producto terminado. Queda fuera a propósito, y se dice:
 
-- [ ] **Notificaciones en tiempo real** al asignar o resolver un ticket (Django Channels o Firebase).
+- [ ] **Notificaciones** al asignar o resolver un ticket (Django Channels o Firebase). Hoy el solicitante tiene que volver a entrar para enterarse de que le respondieron: es la limitación más visible de la v1.
 - [ ] **Adjuntar archivos** a tickets (capturas de pantalla, fotos del equipo) con almacenamiento en S3.
 - [ ] **Reportes exportables** a Excel/PDF: carga por técnico, incidencias por equipo, tiempos de cierre.
 - [ ] **API REST** con Django REST Framework, para integrarse con otros sistemas internos.

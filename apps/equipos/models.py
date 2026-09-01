@@ -17,6 +17,19 @@ class EstadoEquipo(models.TextChoices):
     BAJA = "BAJA", "Dado de baja"
 
 
+class EquipoQuerySet(models.QuerySet):
+    def visibles_para(self, usuario):
+        """Quien no es soporte solo ve sus equipos y los compartidos.
+
+        Los equipos sin responsable (impresoras, router del taller) quedan
+        visibles para todos a proposito: son los que cualquiera necesita poder
+        reportar. El resto del inventario no le incumbe a un usuario comun.
+        """
+        if usuario.puede_gestionar_tickets:
+            return self
+        return self.filter(models.Q(responsable=usuario) | models.Q(responsable__isnull=True))
+
+
 class Equipo(models.Model):
     """Un activo del inventario de TI.
 
@@ -49,6 +62,8 @@ class Equipo(models.Model):
     observaciones = models.TextField(blank=True)
     creado_en = models.DateTimeField(auto_now_add=True)
     actualizado_en = models.DateTimeField(auto_now=True)
+
+    objects = EquipoQuerySet.as_manager()
 
     class Meta:
         verbose_name = "equipo"

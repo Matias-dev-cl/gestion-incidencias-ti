@@ -1,5 +1,6 @@
 from django import forms
 
+from apps.equipos.models import Equipo
 from apps.formularios import CLASES_CHECKBOX, EstiloTailwindMixin
 
 from .models import Comentario, Estado, Ticket
@@ -10,6 +11,13 @@ class TicketForm(EstiloTailwindMixin, forms.ModelForm):
 
     No incluye estado ni tecnico asignado: eso no lo decide el solicitante.
     """
+
+    def __init__(self, *args, usuario=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        # El desplegable no puede ofrecer todo el inventario de la empresa:
+        # se limita a lo que el solicitante podria estar usando.
+        if usuario is not None:
+            self.fields["equipo"].queryset = Equipo.objects.visibles_para(usuario)
 
     class Meta:
         model = Ticket
@@ -35,6 +43,8 @@ class GestionTicketForm(EstiloTailwindMixin, forms.ModelForm):
         # Solo un admin reasigna a otra persona; el tecnico se toma el ticket.
         if usuario is not None and not usuario.es_admin:
             self.fields.pop("tecnico_asignado")
+        if usuario is not None:
+            self.fields["equipo"].queryset = Equipo.objects.visibles_para(usuario)
 
 
 class ComentarioForm(EstiloTailwindMixin, forms.ModelForm):

@@ -18,7 +18,7 @@
     <nav class="flex flex-1 flex-wrap items-center gap-1 text-sm">
       <a href="{% url 'tickets:dashboard' %}" class="rounded-lg px-3 py-2 hover:bg-slate-100">Dashboard</a>
       <a href="{% url 'tickets:lista' %}" class="rounded-lg px-3 py-2 hover:bg-slate-100">Tickets</a>
-      <a href="{% url 'equipos:lista' %}" class="rounded-lg px-3 py-2 hover:bg-slate-100">Inventario</a>
+      <a href="{% url 'equipos:lista' %}" class="rounded-lg px-3 py-2 hover:bg-slate-100">{% if user.puede_gestionar_tickets %}Inventario{% else %}Mis equipos{% endif %}</a>
       {% if user.es_admin %}
         <a href="/admin/" class="rounded-lg px-3 py-2 hover:bg-slate-100">Admin</a>
       {% endif %}

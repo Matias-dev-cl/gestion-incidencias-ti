@@ -125,3 +125,83 @@ class BorradoDeTicket(BaseDatos):
         self.ticket.delete()
         self.equipo.refresh_from_db()
         self.assertEqual(self.equipo.estado, EstadoEquipo.OPERATIVO)
+
+
+class AlcanceDelInventario(BaseDatos):
+    """El inventario completo es informacion de soporte, no de todo el mundo."""
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.equipo_de_beto = Equipo.objects.create(
+            codigo_interno="TI-9002",
+            tipo=TipoEquipo.ESCRITORIO,
+            marca="Dell",
+            responsable=cls.beto,
+        )
+        # Sin responsable: es un equipo compartido y lo ve cualquiera.
+        cls.compartido = Equipo.objects.create(
+            codigo_interno="TI-9003", tipo=TipoEquipo.IMPRESORA, marca="Brother"
+        )
+        cls.equipo_de_ana = Equipo.objects.create(
+            codigo_interno="TI-9004",
+            tipo=TipoEquipo.NOTEBOOK,
+            marca="HP",
+            responsable=cls.ana,
+        )
+
+    def test_usuario_ve_los_suyos_y_los_compartidos(self):
+        visibles = Equipo.objects.visibles_para(self.beto)
+        self.assertIn(self.equipo_de_beto, visibles)
+        self.assertIn(self.compartido, visibles)
+        self.assertNotIn(self.equipo_de_ana, visibles)
+
+    def test_soporte_ve_todo_el_inventario(self):
+        for usuario in (self.tecnico, self.admin):
+            self.assertIn(self.equipo_de_beto, Equipo.objects.visibles_para(usuario))
+
+    def test_detalle_de_equipo_ajeno_devuelve_404(self):
+        self.client.force_login(self.ana)
+        respuesta = self.client.get(reverse("equipos:detalle", args=[self.equipo_de_beto.pk]))
+        self.assertEqual(respuesta.status_code, 404)
+
+    def test_el_formulario_no_ofrece_equipos_ajenos(self):
+        from .forms import TicketForm
+
+        opciones = TicketForm(usuario=self.beto).fields["equipo"].queryset
+        self.assertIn(self.equipo_de_beto, opciones)
+        self.assertIn(self.compartido, opciones)
+        self.assertNotIn(self.equipo_de_ana, opciones)
+
+
+class Reapertura(BaseDatos):
+    def test_el_solicitante_puede_reabrir_su_ticket_resuelto(self):
+        self.ticket.tecnico_asignado = self.tecnico
+        self.ticket.estado = Estado.RESUELTO
+        self.ticket.save()
+
+        self.client.force_login(self.ana)
+        self.client.post(
+            reverse("tickets:reabrir", args=[self.ticket.pk]),
+            {"motivo": "Volvio a fallar al dia siguiente."},
+        )
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.estado, Estado.EN_PROGRESO)
+        self.assertIsNone(self.ticket.cerrado_en)
+        self.assertTrue(self.ticket.comentarios.filter(cuerpo__startswith="Volvio").exists())
+
+    def test_sin_tecnico_vuelve_a_la_cola_como_abierto(self):
+        self.ticket.estado = Estado.CERRADO
+        self.ticket.save()
+        self.client.force_login(self.ana)
+        self.client.post(reverse("tickets:reabrir", args=[self.ticket.pk]))
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.estado, Estado.ABIERTO)
+
+    def test_un_tercero_no_puede_reabrir_un_ticket_ajeno(self):
+        self.ticket.estado = Estado.RESUELTO
+        self.ticket.save()
+        self.client.force_login(self.beto)
+        self.client.post(reverse("tickets:reabrir", args=[self.ticket.pk]))
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.estado, Estado.RESUELTO)

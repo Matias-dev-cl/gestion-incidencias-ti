@@ -12,4 +12,5 @@ urlpatterns = [
     path("tickets/<int:pk>/comentar/", views.ComentarioCreateView.as_view(), name="comentar"),
     path("tickets/<int:pk>/gestionar/", views.GestionTicketView.as_view(), name="gestionar"),
     path("tickets/<int:pk>/tomar/", views.AutoasignarView.as_view(), name="autoasignar"),
+    path("tickets/<int:pk>/reabrir/", views.ReabrirView.as_view(), name="reabrir"),
 ]

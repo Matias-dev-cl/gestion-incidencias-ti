@@ -58,6 +58,8 @@ stateDiagram-v2
     CERRADO --> [*]
 ```
 
+El paso `RESUELTO -> EN_PROGRESO` lo puede disparar el propio solicitante desde el detalle del ticket: si la solución no funcionó, reabrir conserva todo el historial de lo que ya se intentó, en vez de empezar un ticket nuevo desde cero. Si el ticket no tenía técnico asignado, vuelve a `ABIERTO` y a la cola.
+
 `RESUELTO` y `CERRADO` son los estados finales (`Ticket.ESTADOS_FINALES`). Entrar en uno de ellos sella `cerrado_en`; salir lo limpia. Ambas cosas ocurren en `apps/tickets/signals.py`, así que valen igual desde la interfaz, desde el admin o desde un comando.
 
 ## Sincronización ticket ↔ inventario

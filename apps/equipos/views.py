@@ -17,7 +17,7 @@ class EquipoListView(LoginRequiredMixin, ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        qs = Equipo.objects.select_related("responsable").annotate(
+        qs = Equipo.objects.visibles_para(self.request.user).select_related("responsable").annotate(
             abiertos=Count("tickets", filter=~Q(tickets__estado__in=Ticket.ESTADOS_FINALES))
         )
         termino = self.request.GET.get("q", "").strip()
@@ -36,13 +36,18 @@ class EquipoListView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx["q"] = self.request.GET.get("q", "")
+        ctx["es_inventario_completo"] = self.request.user.puede_gestionar_tickets
         return ctx
 
 
 class EquipoDetailView(LoginRequiredMixin, DetailView):
-    model = Equipo
     template_name = "equipos/detalle.html"
     context_object_name = "equipo"
+
+    def get_queryset(self):
+        # Un 404 y no un 403: quien no deberia ver el equipo tampoco tiene por
+        # que enterarse de que existe.
+        return Equipo.objects.visibles_para(self.request.user).select_related("responsable")
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
