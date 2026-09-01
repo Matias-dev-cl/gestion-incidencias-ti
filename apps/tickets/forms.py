@@ -84,4 +84,4 @@ class FiltroTicketsForm(forms.Form):
                 campo.widget.attrs["class"] = CLASES_CHECKBOX
             else:
                 campo.widget.attrs["class"] = base
-        self.fields["q"].widget.attrs["placeholder"] = "Titulo, descripcion o codigo de equipo"
+        self.fields["q"].widget.attrs["placeholder"] = "Buscar por titulo o equipo"
