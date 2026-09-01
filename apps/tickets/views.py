@@ -9,7 +9,7 @@ from apps.equipos.models import Equipo, EstadoEquipo
 from apps.usuarios.mixins import SoloGestionMixin
 
 from .forms import ComentarioForm, FiltroTicketsForm, GestionTicketForm, TicketForm
-from .models import Estado, Prioridad, Ticket
+from .models import Comentario, Estado, Prioridad, Ticket
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
@@ -168,3 +168,33 @@ class AutoasignarView(SoloGestionMixin, View):
         ticket.save()
         messages.success(request, "Tomaste el ticket #%s." % ticket.pk)
         return redirect(reverse("tickets:detalle", args=[ticket.pk]))
+
+
+class ReabrirView(LoginRequiredMixin, View):
+    """El solicitante puede decir que la solucion no funciono.
+
+    Sin esto el ciclo queda cojo: si el problema reaparece, la unica salida es
+    abrir un ticket nuevo y perder el historial de lo que ya se intento.
+    """
+
+    def post(self, request, pk):
+        ticket = get_object_or_404(Ticket, pk=pk)
+        if not ticket.puede_ver(request.user):
+            messages.error(request, "No puedes reabrir este ticket.")
+            return redirect("tickets:lista")
+
+        if not ticket.esta_cerrado:
+            messages.error(request, "El ticket ya esta abierto.")
+            return redirect(ticket.get_absolute_url())
+
+        # Vuelve directo a En progreso si ya tenia tecnico: el caso sigue
+        # siendo de quien lo atendio, no vuelve a la cola sin dueno.
+        ticket.estado = Estado.EN_PROGRESO if ticket.tecnico_asignado else Estado.ABIERTO
+        ticket.save()
+
+        motivo = request.POST.get("motivo", "").strip()
+        if motivo:
+            Comentario.objects.create(ticket=ticket, autor=request.user, cuerpo=motivo)
+
+        messages.success(request, f"Reabriste el ticket #{ticket.pk}.")
+        return redirect(ticket.get_absolute_url())
