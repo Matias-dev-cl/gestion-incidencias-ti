@@ -93,6 +93,9 @@ class TicketCreateView(LoginRequiredMixin, CreateView):
     form_class = TicketForm
     template_name = "tickets/formulario.html"
 
+    def get_form_kwargs(self):
+        return {**super().get_form_kwargs(), "usuario": self.request.user}
+
     def form_valid(self, form):
         form.instance.solicitante = self.request.user
         respuesta = super().form_valid(form)
