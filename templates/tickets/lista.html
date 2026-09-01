@@ -16,24 +16,24 @@
   <a href="{% url 'tickets:lista' %}" class="text-sm text-slate-500 hover:underline">Limpiar</a>
 </form>
 
-<div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+<div class="hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm md:block">
   <div class="overflow-x-auto">
     <table class="min-w-full text-sm">
       <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
         <tr>
-          <th class="px-4 py-3">#</th>
-          <th class="px-4 py-3">Titulo</th>
-          <th class="px-4 py-3">Solicitante</th>
-          <th class="px-4 py-3">Equipo</th>
-          <th class="px-4 py-3">Tecnico</th>
-          <th class="px-4 py-3">
+          <th class="px-4 py-3 whitespace-nowrap">#</th>
+          <th class="px-4 py-3 whitespace-nowrap">Titulo</th>
+          <th class="px-4 py-3 whitespace-nowrap">Solicitante</th>
+          <th class="px-4 py-3 whitespace-nowrap">Equipo</th>
+          <th class="px-4 py-3 whitespace-nowrap">Tecnico</th>
+          <th class="px-4 py-3 whitespace-nowrap">
             <a href="?orden=prioridad{% if parametros %}&amp;{{ parametros }}{% endif %}"
                class="inline-flex items-center gap-1 hover:text-slate-900 {% if orden == 'prioridad' %}text-slate-900{% endif %}">
               Prioridad {% if orden == 'prioridad' %}<span aria-hidden="true">&darr;</span>{% endif %}
             </a>
           </th>
-          <th class="px-4 py-3">Estado</th>
-          <th class="px-4 py-3">
+          <th class="px-4 py-3 whitespace-nowrap">Estado</th>
+          <th class="px-4 py-3 whitespace-nowrap">
             <a href="?orden={% if orden == 'recientes' %}antiguos{% else %}recientes{% endif %}{% if parametros %}&amp;{{ parametros }}{% endif %}"
                class="inline-flex items-center gap-1 hover:text-slate-900 {% if orden != 'prioridad' %}text-slate-900{% endif %}">
               Creado {% if orden == 'recientes' %}<span aria-hidden="true">&darr;</span>{% elif orden == 'antiguos' %}<span aria-hidden="true">&uarr;</span>{% endif %}
@@ -43,23 +43,55 @@
       </thead>
       <tbody class="divide-y divide-slate-100">
         {% for t in tickets %}
-          <tr class="hover:bg-slate-50">
-            <td class="px-4 py-3 text-slate-400">{{ t.pk }}</td>
+          <tr class="hover:bg-slate-50 {% if t.prioridad == 'CRITICA' %}fila-critica{% elif t.prioridad == 'ALTA' %}fila-alta{% endif %}">
+            <td class="cifras px-4 py-3 text-slate-400">{{ t.pk }}</td>
             <td class="px-4 py-3"><a href="{{ t.get_absolute_url }}" class="font-medium text-sky-700 hover:underline">{{ t.titulo }}</a></td>
-            <td class="px-4 py-3 text-slate-600">{% firstof t.solicitante.get_full_name t.solicitante.username %}</td>
-            <td class="px-4 py-3 text-slate-600">{% if t.equipo %}<a href="{{ t.equipo.get_absolute_url }}" class="hover:underline">{{ t.equipo.codigo_interno }}</a>{% else %}&mdash;{% endif %}</td>
-            <td class="px-4 py-3 text-slate-600">{% firstof t.tecnico_asignado.get_full_name t.tecnico_asignado.username "Sin asignar" %}</td>
-            <td class="px-4 py-3">{% include "partials/_prioridad.html" with prioridad=t.prioridad etiqueta=t.get_prioridad_display %}</td>
-            <td class="px-4 py-3">{% include "partials/_estado.html" with estado=t.estado etiqueta=t.get_estado_display %}</td>
-            <td class="px-4 py-3 text-slate-500">{{ t.creado_en|date:"d/m/Y" }}</td>
+            <td class="px-4 py-3 whitespace-nowrap text-slate-600">{% firstof t.solicitante.get_full_name t.solicitante.username %}</td>
+            <td class="cifras px-4 py-3 whitespace-nowrap text-slate-600">{% if t.equipo %}<a href="{{ t.equipo.get_absolute_url }}" class="hover:underline">{{ t.equipo.codigo_interno }}</a>{% else %}&mdash;{% endif %}</td>
+            <td class="px-4 py-3 whitespace-nowrap text-slate-600">{% firstof t.tecnico_asignado.get_full_name t.tecnico_asignado.username "Sin asignar" %}</td>
+            <td class="px-4 py-3 whitespace-nowrap">{% include "partials/_prioridad.html" with prioridad=t.prioridad etiqueta=t.get_prioridad_display %}</td>
+            <td class="px-4 py-3 whitespace-nowrap">{% include "partials/_estado.html" with estado=t.estado etiqueta=t.get_estado_display %}</td>
+            <td class="cifras px-4 py-3 whitespace-nowrap text-slate-500">{{ t.creado_en|date:"d/m/Y" }}</td>
           </tr>
         {% empty %}
-          <tr><td colspan="8" class="px-4 py-10 text-center text-slate-500">No hay tickets que coincidan con el filtro.</td></tr>
+          <tr>
+            <td colspan="8" class="px-4 py-14 text-center">
+              <p class="text-sm font-medium text-slate-700">Nada por aca</p>
+              <p class="mt-1 text-sm text-slate-500">
+                {% if request.GET %}Ningun ticket coincide con el filtro. <a href="{% url 'tickets:lista' %}" class="text-sky-700 hover:underline">Limpiar</a>.
+                {% else %}Todavia no hay tickets. <a href="{% url 'tickets:crear' %}" class="text-sky-700 hover:underline">Reporta el primero</a>.{% endif %}
+              </p>
+            </td>
+          </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 </div>
+
+<ul class="space-y-3 md:hidden">
+  {% for t in tickets %}
+    <li class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm {% if t.prioridad == 'CRITICA' %}fila-critica{% elif t.prioridad == 'ALTA' %}fila-alta{% endif %}">
+      <a href="{{ t.get_absolute_url }}" class="block">
+        <div class="mb-2 flex items-center gap-2">
+          {% include "partials/_prioridad.html" with prioridad=t.prioridad etiqueta=t.get_prioridad_display %}
+          {% include "partials/_estado.html" with estado=t.estado etiqueta=t.get_estado_display %}
+          <span class="cifras ml-auto text-xs text-slate-400">#{{ t.pk }}</span>
+        </div>
+        <p class="text-sm font-medium text-slate-900">{{ t.titulo }}</p>
+        <p class="cifras mt-1 text-xs text-slate-500">
+          {% firstof t.solicitante.get_full_name t.solicitante.username %}
+          {% if t.equipo %}&middot; {{ t.equipo.codigo_interno }}{% endif %}
+          &middot; {{ t.creado_en|date:"d/m/Y" }}
+        </p>
+      </a>
+    </li>
+  {% empty %}
+    <li class="rounded-2xl border border-slate-200 bg-white px-4 py-10 text-center text-sm text-slate-500">
+      No hay tickets que coincidan con el filtro.
+    </li>
+  {% endfor %}
+</ul>
 
 {% if is_paginated %}
   <nav class="mt-4 flex items-center justify-between text-sm text-slate-600">

@@ -35,11 +35,18 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             for fila in tickets.abiertos().values("prioridad").annotate(total=Count("id"))
         }
 
+        # Cada tarjeta lleva el filtro con el que la bandeja muestra justo ese
+        # subconjunto: un numero que no se puede abrir invita a desconfiar de el.
         ctx["metricas"] = [
-            ("Abiertos", tickets.abiertos().count(), "sky"),
-            ("En progreso", por_estado.get(Estado.EN_PROGRESO, 0), "amber"),
-            ("Resueltos", por_estado.get(Estado.RESUELTO, 0), "emerald"),
-            ("Criticos abiertos", por_prioridad.get(Prioridad.CRITICA, 0), "rose"),
+            ("Abiertos", tickets.abiertos().count(), "sky", "estado=ABIERTO"),
+            ("En progreso", por_estado.get(Estado.EN_PROGRESO, 0), "amber", "estado=EN_PROGRESO"),
+            ("Resueltos", por_estado.get(Estado.RESUELTO, 0), "emerald", "estado=RESUELTO"),
+            (
+                "Criticos abiertos",
+                por_prioridad.get(Prioridad.CRITICA, 0),
+                "rose",
+                "prioridad=CRITICA&orden=prioridad",
+            ),
         ]
         ctx["por_estado"] = [
             (etiqueta, por_estado.get(valor, 0)) for valor, etiqueta in Estado.choices

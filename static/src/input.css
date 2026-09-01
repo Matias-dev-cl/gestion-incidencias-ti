@@ -5,3 +5,22 @@
    apps, por eso apps tambien esta en la lista y no solo templates. */
 @source "../../templates";
 @source "../../apps";
+
+@theme {
+  /* Inter para la interfaz: es una familia pensada para pantallas y para
+     numeros tabulares, que es basicamente de lo que va un panel de tickets.
+     Si no carga, la pila del sistema deja el texto igual de legible. */
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Las cifras del dashboard y las fechas de la tabla se alinean en columna:
+   sin esto, cada digito tiene un ancho distinto y los numeros bailan. */
+.cifras {
+  font-variant-numeric: tabular-nums;
+}
+
+/* La franja de color a la izquierda de cada fila deja ver la prioridad sin
+   tener que leer la etiqueta: en una cola larga, el color se procesa antes
+   que el texto. */
+.fila-critica { box-shadow: inset 3px 0 0 var(--color-rose-500); }
+.fila-alta    { box-shadow: inset 3px 0 0 var(--color-orange-400); }

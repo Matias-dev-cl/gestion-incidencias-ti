@@ -30,6 +30,10 @@ El panel de administración de Django queda configurado con filtros, búsqueda, 
 
 ![Admin de Django](docs/capturas/admin.png)
 
+En pantallas chicas la tabla de tickets se reemplaza por tarjetas en vez de dejar que la fila se desborde en horizontal, porque quien reporta una falla muchas veces lo hace desde el teléfono, parado frente al equipo que no funciona:
+
+<img src="docs/capturas/movil-tickets.png" alt="Bandeja de tickets en móvil" width="320">
+
 ## Stack y por qué
 
 | Tecnología | Por qué está aquí |
@@ -37,7 +41,7 @@ El panel de administración de Django queda configurado con filtros, búsqueda, 
 | **Python** | La lógica de negocio real del sistema —visibilidad por rol, cambios de estado, señales que sincronizan ticket e inventario— vive en Python, no repartida en las plantillas. |
 | **Django** | Trae autenticación, permisos, migraciones y panel de administración resueltos. Escribir eso a mano en un proyecto de este tamaño sería trabajo sin retorno. |
 | **PostgreSQL** | El modelo es relacional de verdad (usuario → ticket → comentario, ticket ↔ equipo). Las restricciones y los índices se declaran en el modelo y quedan versionados en las migraciones. |
-| **Tailwind CSS** | UI responsiva sin arrastrar un framework de JS. El CSS se compila a un archivo estático de ~20 KB; el sistema funciona con JavaScript deshabilitado. |
+| **Tailwind CSS** | UI responsiva sin arrastrar un framework de JS. El CSS se compila a un archivo estático de ~21 KB; el sistema funciona con JavaScript deshabilitado, incluido el cambio de orden de la cola. |
 | **Git** | Historial por rama de funcionalidad, con Conventional Commits. El propio historial muestra en qué orden se construyó. |
 | **AWS** | Deploy real con base de datos gestionada, no solo el certificado en el CV. |
 
