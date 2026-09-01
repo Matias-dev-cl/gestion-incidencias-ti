@@ -12,13 +12,14 @@
 </div>
 
 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-  {% for etiqueta, valor, color in metricas %}
-    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+  {% for etiqueta, valor, color, filtro in metricas %}
+    <a href="{% url 'tickets:lista' %}?{{ filtro }}"
+       class="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-300 hover:shadow-md">
       <p class="text-sm text-slate-500">{{ etiqueta }}</p>
-      <p class="mt-2 text-3xl font-semibold text-slate-900">{{ valor }}</p>
-      <span class="mt-3 block h-1 w-10 rounded-full
+      <p class="cifras mt-2 text-3xl font-semibold tracking-tight text-slate-900">{{ valor }}</p>
+      <span class="mt-3 block h-1 w-10 rounded-full transition-all group-hover:w-16
         {% if color == 'sky' %}bg-sky-500{% elif color == 'amber' %}bg-amber-500{% elif color == 'emerald' %}bg-emerald-500{% else %}bg-rose-500{% endif %}"></span>
-    </div>
+    </a>
   {% endfor %}
 </div>
 
@@ -30,7 +31,7 @@
         <li>
           <div class="mb-1 flex justify-between text-sm">
             <span class="text-slate-600">{{ etiqueta }}</span>
-            <span class="font-medium text-slate-900">{{ cantidad }}</span>
+            <span class="cifras font-medium text-slate-900">{{ cantidad }}</span>
           </div>
           <div class="h-2 w-full overflow-hidden rounded-full bg-slate-100">
             <div class="h-full rounded-full bg-sky-500" style="width: {% widthratio cantidad total 100 %}%"></div>
@@ -40,8 +41,8 @@
     </ul>
     {% if user.puede_gestionar_tickets %}
       <div class="mt-5 space-y-1 border-t border-slate-100 pt-4 text-sm text-slate-600">
-        <p>Sin tecnico asignado: <span class="font-semibold text-slate-900">{{ sin_asignar }}</span></p>
-        <p>Equipos en reparacion: <span class="font-semibold text-slate-900">{{ equipos_en_reparacion }}</span></p>
+        <p>Sin tecnico asignado: <span class="cifras font-semibold text-slate-900">{{ sin_asignar }}</span></p>
+        <p>Equipos en reparacion: <span class="cifras font-semibold text-slate-900">{{ equipos_en_reparacion }}</span></p>
       </div>
     {% endif %}
   </div>
@@ -63,7 +64,12 @@
           {% include "partials/_estado.html" with estado=t.estado etiqueta=t.get_estado_display %}
         </li>
       {% empty %}
-        <li class="px-5 py-8 text-center text-sm text-slate-500">Todavia no hay tickets registrados.</li>
+        <li class="px-5 py-12 text-center">
+          <p class="text-sm font-medium text-slate-700">Todo tranquilo</p>
+          <p class="mt-1 text-sm text-slate-500">
+            No hay tickets registrados. <a href="{% url 'tickets:crear' %}" class="text-sky-700 hover:underline">Reporta el primero</a>.
+          </p>
+        </li>
       {% endfor %}
     </ul>
   </div>
