@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block titulo %}Sin permisos{% endblock %}
+{% block contenido %}
+<div class="mx-auto max-w-md py-16 text-center">
+  <p class="text-6xl font-bold text-slate-300">403</p>
+  <h1 class="mt-4 text-xl font-semibold text-slate-900">Tu rol no alcanza para esto</h1>
+  <p class="mt-2 text-sm text-slate-500">
+    Esta seccion es del area de soporte. Si necesitas acceso, pideselo a un administrador.
+  </p>
+  <a href="{% url 'tickets:dashboard' %}" class="mt-6 inline-block rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700">Volver al dashboard</a>
+</div>
+{% endblock %}
